@@ -116,7 +116,7 @@ type Rect struct {
 	Left, Top, Right, Bottom int32
 }
 
-// 通过窗口标题获取窗口句柄
+// 通过窗口句柄获取窗口RECT
 func GetWindowRect(hwnd int32) (rect Rect) {
 	if code, _, _ := _GetWindowRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&rect.Left)), uintptr(unsafe.Pointer(&rect.Top)), uintptr(unsafe.Pointer(&rect.Right)), uintptr(unsafe.Pointer(&rect.Bottom))); code != 0 {
 		panic(errors.New("GetWindowRect call failed"))
