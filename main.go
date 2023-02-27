@@ -17,9 +17,17 @@ var (
 	_MagneticInit        = utils.NewProc("MagneticInit")
 	_PidInit             = utils.NewProc("PidInit")
 	_SpeedInit           = utils.NewProc("SpeedInit")
-	_GetWindowCapture    = utils.NewProc("GetWindowCapture")
-	_GetHwndByTitle      = utils.NewProc("GetHwndByTitle")
-	_GetWindowRect       = utils.NewProc("GetWindowRect")
+
+	_CaptureInit    = utils.NewProc("CaptureInit")
+	_CaptureRelease = utils.NewProc("CaptureRelease")
+	_CaptureBitmap  = utils.NewProc("CaptureBitmap")
+	_CaptureBmp     = utils.NewProc("CaptureBmp")
+
+	_GetHwndByTitle = utils.NewProc("GetHwndByTitle")
+	_GetWindowRect  = utils.NewProc("GetWindowRect")
+
+	_IsWindowIconic  = utils.NewProc("IsWindowIconic")
+	_IsWindowVisible = utils.NewProc("IsWindowVisible")
 )
 
 // 获取鼠标当前移动速度
@@ -88,18 +96,38 @@ func Compute(name string, currentX, currentY, targetX, targetY float64) (outputX
 	return
 }
 
-// 获取窗口截图
-func GetWindowCapture(hwnd, x, y, width, height int32, suffix string) (data []byte) {
-	if code, _, _ := _GetWindowCapture.Call(
+// 捕获初始化
+func CaptureInit(hwnd, x, y, width, height int32) {
+	if code, _, _ := _CaptureInit.Call(
 		uintptr(hwnd),
 		uintptr(x),
 		uintptr(y),
 		uintptr(width),
 		uintptr(height),
-		uintptr(unsafe.Pointer(&suffix)),
-		uintptr(unsafe.Pointer(&data)),
 	); code != 0 {
-		panic(errors.New("GetWindowCapture call failed"))
+		panic(errors.New("CaptureInit call failed"))
+	}
+}
+
+// 捕获释放
+func CaptureRelease() {
+	if code, _, _ := _CaptureRelease.Call(); code != 0 {
+		panic(errors.New("CaptureRelease call failed"))
+	}
+}
+
+// 捕获bitmap
+func CaptureBitmap() (data []byte) {
+	if code, _, _ := _CaptureBitmap.Call(uintptr(unsafe.Pointer(&data))); code != 0 {
+		panic(errors.New("CaptureBitmap call failed"))
+	}
+	return
+}
+
+// 捕获bmp
+func CaptureBmp() (data []byte) {
+	if code, _, _ := _CaptureBmp.Call(uintptr(unsafe.Pointer(&data))); code != 0 {
+		panic(errors.New("CaptureBmp call failed"))
 	}
 	return
 }
@@ -122,4 +150,20 @@ func GetWindowRect(hwnd int32) (rect Rect) {
 		panic(errors.New("GetWindowRect call failed"))
 	}
 	return
+}
+
+// 通过窗口句柄判断窗口是否最小化
+func IsWindowIconic(hwnd int32) bool {
+	if code, _, _ := _IsWindowIconic.Call(uintptr(hwnd)); code == 0 {
+		return true
+	}
+	return false
+}
+
+// 通过窗口句柄判断窗口是否最小化
+func IsWindowVisible(hwnd int32) bool {
+	if code, _, _ := _IsWindowVisible.Call(uintptr(hwnd)); code == 0 {
+		return true
+	}
+	return false
 }

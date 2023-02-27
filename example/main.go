@@ -17,10 +17,24 @@ func TryCatch(callback func(), catch func(err any)) {
 }
 
 func main() {
+	log.SetFlags(log.Ltime | log.Lmsgprefix | log.Llongfile | log.Lshortfile)
 	TryCatch(
 		func() {
-			// 获取窗口句柄
-			hwnd := utils.GetHwndByTitle("AJ64插件绑定测试工具VIP专用 插件版本号:22.9.1")
+			var hwnd int32
+
+			// 启动线程监控窗口
+			go func() {
+				for {
+					newHwnd := utils.GetHwndByTitle("v2rayN - V3.29 - 2020/12/05")
+					if hwnd != newHwnd {
+						hwnd = newHwnd
+						utils.CaptureInit(hwnd, 0, 0, 640, 640)
+					}
+					time.Sleep(1 * time.Second)
+				}
+			}()
+
+			defer utils.CaptureRelease()
 
 			// 计算屏幕中心点
 			width, height := utils.GetScreenResolution()
@@ -35,21 +49,37 @@ func main() {
 
 			// for循环模拟推理
 			for {
-				// 截图
-				startTime := time.Now().UnixMilli()
-				utils.GetWindowCapture(hwnd, 0, 0, 160, 160, "bmp")
-				captureTime := time.Now().UnixMilli() - startTime
+				// 判断窗口是否存在
+				if hwnd <= 0 || utils.IsWindowIconic(hwnd) || !utils.IsWindowVisible(hwnd) {
+					log.Println("窗口不存在或最小化或不可见")
+					time.Sleep(1 * time.Second)
+					continue
+				}
+				TryCatch(
+					func() {
+						// 截图
+						startTime := time.Now()
+						utils.CaptureBmp()
+						captureTime := time.Since(startTime)
 
-				// 获取当前鼠标位置
-				currentX, currentY := utils.GetCursorPos()
+						// 获取当前鼠标位置
+						currentX, currentY := utils.GetCursorPos()
 
-				// 调用算法
-				outputX, outputY := utils.Compute("LinearCompute", currentX, currentY, float64(centerX), float64(centerY))
+						// 调用算法
+						outputX, outputY := utils.Compute("LinearCompute", currentX, currentY, float64(centerX), float64(centerY))
 
-				// 鼠标移动
-				utils.MoveMouse(outputX, outputY)
+						// 鼠标移动
+						// utils.MoveMouse(outputX, outputY)
 
-				log.Printf("当前位置：(%d,%d) - 截图耗时：(%dms)\n", int(outputX), int(outputY), captureTime)
+						log.Printf("当前位置：(%2d,%2d) - 截图耗时：%5v\n", int(outputX), int(outputY), captureTime)
+						// os.WriteFile("output.bmp", b, fs.ModePerm)
+					},
+					func(err any) {
+						log.Println(err)
+						time.Sleep(1 * time.Second)
+					},
+				)
+
 			}
 		},
 		func(err any) {
