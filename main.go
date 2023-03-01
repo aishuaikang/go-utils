@@ -21,7 +21,7 @@ var (
 	_CaptureInit    = utils.NewProc("CaptureInit")
 	_CaptureRelease = utils.NewProc("CaptureRelease")
 	_CaptureBitmap  = utils.NewProc("CaptureBitmap")
-	_CaptureBmp     = utils.NewProc("CaptureBmp")
+	_BitmapSaveBMP  = utils.NewProc("BitmapSaveBMP")
 
 	_GetHwndByTitle = utils.NewProc("GetHwndByTitle")
 	_GetWindowRect  = utils.NewProc("GetWindowRect")
@@ -124,12 +124,11 @@ func CaptureBitmap() (data []byte) {
 	return
 }
 
-// 捕获bmp
-func CaptureBmp() (data []byte) {
-	if code, _, _ := _CaptureBmp.Call(uintptr(unsafe.Pointer(&data))); code != 0 {
-		panic(errors.New("CaptureBmp call failed"))
+// 保存bmp
+func BitmapSaveBMP(path string) {
+	if code, _, _ := _BitmapSaveBMP.Call(uintptr(unsafe.Pointer(&path))); code != 0 {
+		panic(errors.New("BitmapSaveBMP call failed"))
 	}
-	return
 }
 
 // 通过窗口标题获取窗口句柄

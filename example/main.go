@@ -59,7 +59,7 @@ func main() {
 					func() {
 						// 截图
 						startTime := time.Now()
-						utils.CaptureBmp()
+						utils.CaptureBitmap()
 						captureTime := time.Since(startTime)
 
 						// 获取当前鼠标位置
@@ -70,9 +70,8 @@ func main() {
 
 						// 鼠标移动
 						// utils.MoveMouse(outputX, outputY)
-
 						log.Printf("当前位置：(%2d,%2d) - 截图耗时：%5v\n", int(outputX), int(outputY), captureTime)
-						// os.WriteFile("output.bmp", b, fs.ModePerm)
+						// utils.BitmapSaveBMP("test.bmp")
 					},
 					func(err any) {
 						log.Println(err)
